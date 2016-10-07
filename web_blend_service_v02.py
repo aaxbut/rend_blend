@@ -79,13 +79,68 @@ async def transmit(request):
 
         if request.content_type == 'application/json':
             logging.info('Session method : {}, session type : {}, messages is : {}'.format(request.method, request.content_type, req_json))
-            # run render 
-           # k = await run_render_multi(req_json) 
 
-        return web.json_response(await run_render_multi(req_json))
+            # run render 
+            k = await run_render_multi(req_json) 
+
+            return web.json_response(k)
 
 
 ### start render module
+#before render 
+BLEND_DIR =r'blend_pr'
+USERS_DIR =r'/home/aaxbut/python/rend_blend/users'
+
+
+#for x in bpy.data.scenes['Scene'].sequence_editor.sequences_all:
+#    if x.type == 'IMAGE':
+#        seq_elem = x.strip_elem_from_frame(0)
+#        #print(x.name.split('.')[0])
+#        if x.name.split('.')[0] in task['files_png']:
+#            print('test', task['files_png'][x.name.split('.')[0]])
+#            seq_elem.filename = task['files_png'][x.name.split('.')[0]]
+
+
+def find_before(task):
+
+    for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name'])):
+        if not entry.name.startswith('.') and entry.is_file():
+            if entry.name == task['project_name'] +'.blend':
+           #     print ('found file project  : {} '.format(entry.name))
+                #bpy.path = os.path.join(BLEND_DIR, task['name'])
+                ##print('work dir ',bpy.path.basename(os.path.join(BLEND_DIR, task['name'])))
+             #   print ('directory in : ',os.getcwd())
+                # set directory where file place    
+                os.chdir(os.path.abspath(os.path.join(BLEND_DIR, task['project_name'])))
+
+               # print ('directory in :2 : ',os.getcwd())    
+                bpy.ops.wm.open_mainfile(filepath=entry.name)
+                name_file =task['user']+entry.name
+                bpy.ops.wm.save_as_mainfile(filepath=name_file)
+
+                #print('os dir now',os.path.abspath(os.path.join(USERS_DIR, task['user'])))
+    bpy.ops.wm.open_mainfile(filepath=name_file)
+
+
+    for entry1 in os.listdir(os.path.join(USERS_DIR, task['user'])):
+        for entry2 in os.listdir(os.path.join(USERS_DIR, task['user'], entry1)):
+            for x in bpy.data.scenes['Scene'].sequence_editor.sequences_all:
+                if x.type == 'IMAGE':
+                    seq_elem = x.strip_elem_from_frame(0)
+                    #print(x.name.split('.')[0])
+                    if x.name.split('.')[0] in task['files_png']:
+                       # print('test', task['files_png'][x.name.split('.')[0]])
+                       # print('dfddfdf',os.path.join(USERS_DIR, task['user'], entry1))
+
+                        seq_elem.filename = task['files_png'][x.name.split('.')[0]]
+
+                        x.directory = os.path.join(USERS_DIR, task['user'], entry1)
+
+    bpy.ops.wm.save_as_mainfile(filepath=name_file)
+    return '{ok}'
+
+
+##
 
 def worker(q,task):
 
@@ -94,13 +149,16 @@ def worker(q,task):
         try:
             
             q.get_nowait()
-            logging.info('{} : WORKER: {} and file name {}'.format(datetime.now().strftime('%c'), task,task['file_name']))
-            bpy.ops.wm.open_mainfile(filepath=task['file_name'])
+            logging.info('{} : WORKER: {} and file name {}'.format(datetime.now().strftime('%c'), task,task['project_name']))
+            ## before render we create new file project of blender, and run render it self
+
+            #bpy.ops.wm.open_mainfile(filepath=task['file_name'])
+            find_before(task)
             bpy.context.scene.render.filepath =r'/tmp/'+str(time.time())
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
-            bpy.context.scene.frame_start = 0
-            bpy.context.scene.frame_end = 10
+           # bpy.context.scene.frame_start = 0
+           # bpy.context.scene.frame_end = 200
 
             #bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
             q.task_done()
@@ -108,7 +166,7 @@ def worker(q,task):
         except Empty:
            # logging.info('in worker have exception: {} and file name {}'.format(task,task['file_name']))
            # logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
-            logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
+            logging.info('render  name {} complete at {}'.format(task['project_name'],datetime.now().strftime('%c')))
             break
             
 
@@ -121,7 +179,7 @@ async def run_render_multi(data_for_render):
     tasks = []
     server_info()
     if data_for_render['message'] =='We did it!':
-        logging.info('render file name {} complete at {} CPU count {}'.format(data_for_render['file_name'],datetime.now().strftime('%c'),os.cpu_count()))
+        logging.info('render file name {} complete at {} CPU count {}'.format(data_for_render['project_name'],datetime.now().strftime('%c'),os.cpu_count()))
         freeze_support()
         num_procs = os.cpu_count();
         q =  mp.JoinableQueue()
@@ -173,13 +231,13 @@ if __name__ == '__main__':
     app.router.add_route('POST','/', handle)
     app.router.add_route('GET','/{name}', handle)
 
-    setup(app, EncryptedCookieStorage(secret_key))
+    #setup(app, EncryptedCookieStorage(secret_key))
     
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
     loop = asyncio.get_event_loop()
-    f = loop.create_server(app.make_handler(),'0.0.0.0',8080)
+    f = loop.create_server(app.make_handler(),'0.0.0.0',781)
     
     srv = loop.run_until_complete(f)
     print('serving on', srv.sockets[0].getsockname())

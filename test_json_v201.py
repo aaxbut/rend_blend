@@ -4,8 +4,10 @@ import json
 
 
 async def fetch(client):
-        url = "http://127.0.0.1:8080/tr"
-        data = {'sender':'node-1','user': 'aaxbut', 'file_h1': 'head1.png', 'message': 'We did it!','project_name':'Rauf40','file_name':'500265.blend'}
+        url = "http://127.0.0.1:781/tr"
+        data = {'sender':'node-1','user': 'bob', 'message': 'We did it!','project_name':'Rauf','files_png':{'head1':'head13.png','mouth1':'mouth13.png'}}
+        #data = {'sender':'node-1','user': 'nebob', 'file_h1': 'head1.png', 'message': 'We did it!','project_name':'Rauf','file_name':'500265.blend','files_png':{'head1':'head1.png','mouth1':'mouth1.png'}}
+        #data = {'sender':'node-1','user': 'aaxbut', 'file_h1': 'head1.png', 'message': 'We did it!','project_name':'Rauf','file_name':'500265.blend','files_png':{'head1':'head12.png','mouth1':'mouth12.png'}}
         headers = {'Content-type': 'application/json'}
         #async with client.get(url,data=data) as session:
         #    assert session.status == 200
