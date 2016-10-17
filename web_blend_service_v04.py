@@ -4,7 +4,7 @@ import logging
 import uvloop
 import json
 
-
+import aiohttp_session
 from aiohttp_session import setup, get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 import base64
@@ -23,49 +23,55 @@ import time
 
 
 
-
-async def handle(request):
-        #pass
-        logging.info('in test module {0}'.format(request.json))
-        if request.method == 'POST':
-            print('post!!!!!')
-        name = request.match_info.get('name', "Anonymous")
-        text = "Hello, " + name
-        return web.Response(text=text)
-
-
-
-async def wshandler(request):
-        if request.method == 'POST':
-            print('post!!!!!')
-        logging.info('in wshandler module {0}'.format(request.json))
-        ws = web.WebSocketResponse()
-        await ws.prepare(request)
-        for msg in ws:
-            if msg.type == web.MsgType.text:
-                ws.send_str("Hello, {}".format(msg.data))
-            elif msg.type == web.MsgType.binary:
-                ws.send_bytes(msg.data)
-            elif msg.type == web.MsgType.close:
-                break
-        return ws
+@asyncio.coroutine
+def handle(request):
+    #pass
+    logging.info('in test module {0}'.format(request.json))
+    if request.method == 'POST':
+        print('post!!!!!')
+    name = request.match_info.get('name', "Anonymous")
+    text = "Hello, " + name
+    return web.Response(text=text)
 
 
+@asyncio.coroutine
+def wshandler(request):
+    if request.method == 'POST':
+        print('post!!!!!')
+    logging.info('in wshandler module {0}'.format(request.json))
+    ws = web.WebSocketResponse()
+    ws.prepare(request)
+    for msg in ws:
+        if msg.type == web.MsgType.text:
+            ws.send_str("Hello, {}".format(msg.data))
+        elif msg.type == web.MsgType.binary:
+            ws.send_bytes(msg.data)
+        elif msg.type == web.MsgType.close:
+            break
+    return ws
 
-async def check_data(data):
-    
 
+@asyncio.coroutine
+def check_data(data):
     data['start_frame']=0
     data['end_frame']=50
 
     return data
 
 
+@asyncio.coroutine
+def transmit(request):
+    request.post()
+    data = yield from request.text()
+    #args = yield from get_session(request)
+    #yield data
 
-async def transmit(request):
-        request.post()
-        req_json = json.loads(await request.text())
-        req_json = await check_data(req_json)
+    req_json = json.loads(data)
+   # req_json = check_data(req_json)
+    #print(req_json)
+    logging.info('Session method : {}, session type : {}, messages is : {} : {}'.format(request.method, request, request, req_json))
+
+
         
 
         
@@ -77,14 +83,15 @@ async def transmit(request):
          #   logging.info('request in  : {}'.format(x))
 
 
-        if request.content_type == 'application/json':
-            logging.info('Session method : {}, session type : {}, messages is : {}'.format(request.method, request.content_type, req_json))
+    if request.content_type == 'application/json': 
+        # logging.info('Session method : {}, session type : {}, messages is : {}'.format(request.method, request.content_type, req_json))
 
             # run render 
-            k = await run_render_multi(req_json) 
+        k = yield from run_render_multi(req_json)
 
-            return web.json_response(k)
-        return request.text()
+        return web.json_response(k)
+    return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
+        content_type='application/json')#(yield from request.text())
 
 
 ### start render module
@@ -104,8 +111,11 @@ USERS_DIR =r'/home/aaxbut/python/rend_blend/users'
 
 def find_before(task):
 
+
     for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name'])):
+
         if not entry.name.startswith('.') and entry.is_file():
+
             if entry.name == task['project_name'] +'.blend':
            #     print ('found file project  : {} '.format(entry.name))
                 #bpy.path = os.path.join(BLEND_DIR, task['name'])
@@ -154,15 +164,17 @@ def worker(q,task):
             ## before render we create new file project of blender, and run render it self
 
             #bpy.ops.wm.open_mainfile(filepath=task['file_name'])
-            #find_before(task)
+            find_before(task)
             bpy.context.scene.render.filepath =r'/tmp/'+str(time.time())
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
-           # bpy.context.scene.frame_start = 0
-           # bpy.context.scene.frame_end = 200
+            bpy.context.scene.frame_start = 0
+            bpy.context.scene.frame_end = 200
 
-            #bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
-            q.task_done()
+            l = bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
+            logging.info('render  name {} complete at {}'.format(l,datetime.now().strftime('%c')))
+            if l == {'FINISHED'}: 
+                q.task_done()
            ## logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
         except Empty:
            # logging.info('in worker have exception: {} and file name {}'.format(task,task['file_name']))
@@ -174,8 +186,8 @@ def worker(q,task):
 # --
 
 
-
-async def run_render_multi(data_for_render):
+@asyncio.coroutine
+def run_render_multi(data_for_render):
     
     tasks = []
     server_info()
@@ -183,8 +195,9 @@ async def run_render_multi(data_for_render):
         logging.info('render file name {} complete at {} CPU count {}'.format(data_for_render['project_name'],datetime.now().strftime('%c'),os.cpu_count()))
         freeze_support()
         num_procs = os.cpu_count();
-        q =  mp.JoinableQueue()
+        q =  mp.JoinableQueue(2)
         logging.info('in test module {0}'.format(data_for_render['sender']))
+        
         tasks.append(data_for_render)
 
         for task in tasks:
@@ -195,8 +208,9 @@ async def run_render_multi(data_for_render):
         #p.daemon = True
             p.start()
            # p.join()
-        for p in procs: p.join()
-    return '{OK}'
+        for p in procs: 
+            p.join()
+    return data_for_render
 
 ### end render module 
 
@@ -214,9 +228,9 @@ def server_info():
 
 ### end server info 
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 # log level debug
-
+def init(loop):
     logging.basicConfig(level=logging.DEBUG)
 
     fernet_key = fernet.Fernet.generate_key()
@@ -231,20 +245,21 @@ if __name__ == '__main__':
     app.router.add_route('GET','/', handle)
     app.router.add_route('POST','/', handle)
     app.router.add_route('GET','/{name}', handle)
-
+    #setup(app, EncryptedCookieStorage(secret_key))
     #setup(app, EncryptedCookieStorage(secret_key))
     
     # asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 
-    loop = asyncio.get_event_loop()
-    f = loop.create_server(app.make_handler(),'0.0.0.0',781)
-    
-    srv = loop.run_until_complete(f)
-    print('serving on', srv.sockets[0].getsockname())
-    try:
-        print(type(loop.run_forever()))
-        loop.run_forever()
-        
-    except KeyboardInterrupt:
-        pass 
+    #loop = asyncio.get_event_loop()
+    f = yield from loop.create_server(app.make_handler(),'0.0.0.0',781)
+    return f
+
+
+app = web.Application()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(init(loop))
+try: 
+    loop.run_forever()
+except KeyboardInterrupt:  
+    pass
