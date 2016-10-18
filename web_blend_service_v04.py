@@ -5,7 +5,7 @@ import json
 
 import aiohttp_session
 from aiohttp_session import setup, get_session, session_middleware
-from aiohttp_session.cookie_storage import EncryptedCookieStorage
+#from aiohttp_session.cookie_storage import EncryptedCookieStorage
 
 import multiprocessing as mp
 from multiprocessing import Process, freeze_support
