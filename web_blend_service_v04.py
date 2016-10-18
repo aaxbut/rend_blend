@@ -1,17 +1,11 @@
 from aiohttp import web
 import asyncio
 import logging
-import uvloop
 import json
 
 import aiohttp_session
 from aiohttp_session import setup, get_session, session_middleware
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
-import base64
-from cryptography import fernet
-
-import ssl
-
 
 import multiprocessing as mp
 from multiprocessing import Process, freeze_support
@@ -87,7 +81,7 @@ def transmit(request):
         # logging.info('Session method : {}, session type : {}, messages is : {}'.format(request.method, request.content_type, req_json))
 
             # run render 
-        k = (yield from lambda x:run_render_multi(req_json))
+        k = yield from run_render_multi(req_json)
 
         return web.json_response(k)
     return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
@@ -233,8 +227,8 @@ def server_info():
 def init(loop):
     logging.basicConfig(level=logging.DEBUG)
 
-    fernet_key = fernet.Fernet.generate_key()
-    secret_key = base64.urlsafe_b64decode(fernet_key)
+   # fernet_key = fernet.Fernet.generate_key()
+   # secret_key = base64.urlsafe_b64decode(fernet_key)
     
     app = web.Application()
 
