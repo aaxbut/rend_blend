@@ -87,7 +87,7 @@ def transmit(request):
         # logging.info('Session method : {}, session type : {}, messages is : {}'.format(request.method, request.content_type, req_json))
 
             # run render 
-        k = yield from run_render_multi(req_json)
+        k = (yield from lambda x:run_render_multi(req_json))
 
         return web.json_response(k)
     return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
@@ -195,7 +195,7 @@ def run_render_multi(data_for_render):
         logging.info('render file name {} complete at {} CPU count {}'.format(data_for_render['project_name'],datetime.now().strftime('%c'),os.cpu_count()))
         freeze_support()
         num_procs = os.cpu_count();
-        q =  mp.JoinableQueue(2)
+        q =  mp.JoinableQueue()
         logging.info('in test module {0}'.format(data_for_render['sender']))
         
         tasks.append(data_for_render)
