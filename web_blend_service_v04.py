@@ -16,7 +16,6 @@ import time
 
 
 
-
 @asyncio.coroutine
 def handle(request):
     #pass
@@ -55,7 +54,8 @@ def check_data(data):
 
 @asyncio.coroutine
 def transmit(request):
-    request.post()
+    #request.post()
+    ts = []
     data = yield from request.text()
     #args = yield from get_session(request)
     #yield data
@@ -77,13 +77,32 @@ def transmit(request):
          #   logging.info('request in  : {}'.format(x))
 
 
-    if request.content_type == 'application/json': 
+    if request.content_type == 'application/json':
+
+       #$# ts.append(req_json)
+        f = jQ(req_json)
+        logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(f))
+
+        #j=5
+        #while ts:
+        #    k=ts.pop()
+        #    logging.info('!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k))
+        #    j-=1
+        #    k1 = yield from run_render_multi(k)
+        #    logging.info(__name__)
+        #    logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k1))
+            
+
+
+
         # logging.info('Session method : {}, session type : {}, messages is : {}'.format(request.method, request.content_type, req_json))
 
             # run render 
-        k = yield from run_render_multi(req_json)
+        yield from run_render_multi(req_json)
+        #logging.info(__name__)
+        #logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k))
 
-        return web.json_response(k)
+        return web.json_response('{k}')
     return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
         content_type='application/json')#(yield from request.text())
 
@@ -92,6 +111,13 @@ def transmit(request):
 #before render 
 BLEND_DIR =r'blend_pr'
 USERS_DIR =r'/home/aaxbut/python/rend_blend/users'
+
+
+def jQ(t):
+    tt=[]
+    tt.append(t)
+    logging.info('!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(len(tt)))
+    return len(tt)
 
 
 #for x in bpy.data.scenes['Scene'].sequence_editor.sequences_all:
@@ -147,7 +173,9 @@ def find_before(task):
 
 ##
 
+
 def worker(q,task):
+    
 
     logging.info('{}: TASK:{} Q: {}'.format(datetime.now().strftime('%c'),task,type(q)))
     while True:
@@ -163,17 +191,17 @@ def worker(q,task):
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
             bpy.context.scene.frame_start = 0
-            bpy.context.scene.frame_end = 200
-
-            l = bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
-            logging.info('render  name {} complete at {}'.format(l,datetime.now().strftime('%c')))
-            if l == {'FINISHED'}: 
-                q.task_done()
+            bpy.context.scene.frame_end = 10
+            
+            bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
+           
+            #if l == {'FINISHED'}: 
+            q.task_done()
            ## logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
         except Empty:
            # logging.info('in worker have exception: {} and file name {}'.format(task,task['file_name']))
            # logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
-            logging.info('render  name {} complete at {}'.format(task['project_name'],datetime.now().strftime('%c')))
+            logging.info(' render  name {} complete at {}'.format(task['project_name'],datetime.now().strftime('%c')))
             break
             
 
@@ -184,26 +212,47 @@ def worker(q,task):
 def run_render_multi(data_for_render):
     
     tasks = []
+    g=[]
     server_info()
+   
     if data_for_render['message'] =='We did it!':
-        logging.info('render file name {} complete at {} CPU count {}'.format(data_for_render['project_name'],datetime.now().strftime('%c'),os.cpu_count()))
+        
+        logging.info('render file name {} start at {} CPU count {}'.format(data_for_render['project_name'],datetime.now().strftime('%c'),os.cpu_count()))
         freeze_support()
         num_procs = os.cpu_count();
         q =  mp.JoinableQueue()
-        logging.info('in test module {0}'.format(data_for_render['sender']))
+        
         
         tasks.append(data_for_render)
-
+        logging.info('!!!!!len of TASK {}:  QUE SIZE {}'.format(len(tasks), q.qsize()))
         for task in tasks:
                 q.put(task)
+                g.append(1)
                     #logging.info('task name {} and file name {}'.format(task,x['file_name']))
-        procs = (mp.Process(target= worker, args=(q,task,)) for _ in range(num_procs))
+
+        procs = (mp.Process(target=worker, args=(q,task,)) for _ in range(1))
+        logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(procs))
+        #procs[0].start()
+        #time.sleep(1)
         for p in procs:
-        #p.daemon = True
+            #p.daemon = True
+            #g.append(1)
+            logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(p))
             p.start()
+           #p.join()
+           
+           
+        
            # p.join()
         for p in procs: 
             p.join()
+           # time.sleep(1)
+        #    if not p.is_alive():
+            logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(p))
+        #        sys.stdout.flush()
+           
+        
+
     return data_for_render
 
 ### end render module 

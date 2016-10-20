@@ -6,8 +6,8 @@ import json
 async def fetch(client):
         url = "http://127.0.0.1:781/tr"
         data = {'sender':'node-1','user': 'bob', 'message': 'We did it!','project_name':'Rauf','files_png':{'head1':'head13.png','mouth1':'mouth13.png'}}
-        #data = {'sender':'node-1','user': 'nebob', 'file_h1': 'head1.png', 'message': 'We did it!','project_name':'Rauf','file_name':'500265.blend','files_png':{'head1':'head1.png','mouth1':'mouth1.png'}}
-        #data = {'sender':'node-1','user': 'aaxbut', 'file_h1': 'head1.png', 'message': 'We did it!','project_name':'Rauf','file_name':'500265.blend','files_png':{'head1':'head12.png','mouth1':'mouth12.png'}}
+        #data = {'sendaemonder':'node-1','user': 'nebob', 'file_h1': 'head1.png', 'message': 'We did it!','project_name':'Rauf','file_name':'500265.blend','files_png':{'head1':'head1.png','mouth1':'mouth1.png'}}
+        #data = {'sender':'node-1','user': 'aaxbut', 'file_h1': 'head1.png', 'message': 'We did it!','requestproject_name':'Rauf','file_name':'500265.blend','files_png':{'head1':'head12.png','mouth1':'mouth12.png'}}
         headers = {'Content-type': 'application/json'}
         #async with client.get(url,data=data) as session:
         #    assert session.status == 200
@@ -19,7 +19,7 @@ async def fetch(client):
             u =  json.loads(await post_session.text())
             #print(u['name'])
             
-            print('Session method "{}", session state closed  : {} : {} json data:{}, session k'.format(post_session.method, client.closed,u,data))
+            #print('Session method "{}", session state closed  : {} : {} json data:{}, session k'.format(post_session.method, client.closed,u,data))
 #            await post_session.release()
 
         return await post_session.text()

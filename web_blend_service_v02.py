@@ -196,7 +196,7 @@ async def run_render_multi(data_for_render):
             p.start()
            # p.join()
         for p in procs: p.join()
-    return '{OK}'
+    return data_for_render
 
 ### end render module 
 
