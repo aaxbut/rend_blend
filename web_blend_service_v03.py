@@ -6,9 +6,9 @@ import json
 
 
 from aiohttp_session import setup, get_session, session_middleware
-from aiohttp_session.cookie_storage import EncryptedCookieStorage
+#from aiohttp_session.cookie_storage import EncryptedCookieStorage
 import base64
-from cryptography import fernet
+#from cryptography import fernet
 
 import ssl
 
@@ -218,8 +218,8 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
 
-    fernet_key = fernet.Fernet.generate_key()
-    secret_key = base64.urlsafe_b64decode(fernet_key)
+    #fernet_key = fernet.Fernet.generate_key()
+   # secret_key = base64.urlsafe_b64decode(fernet_key)
     
     app = web.Application()
 

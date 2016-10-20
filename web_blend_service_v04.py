@@ -168,7 +168,7 @@ def find_before(task):
                         x.directory = os.path.join(USERS_DIR, task['user'], entry1)
 
     bpy.ops.wm.save_as_mainfile(filepath=name_file)
-    return '{ok}'
+    return os.path.abspath(os.path.join(BLEND_DIR,name_file))
 
 
 ##
@@ -186,22 +186,27 @@ def worker(q,task):
             ## before render we create new file project of blender, and run render it self
 
             #bpy.ops.wm.open_mainfile(filepath=task['file_name'])
-            find_before(task)
+            o = find_before(task)
             bpy.context.scene.render.filepath =r'/tmp/'+str(time.time())
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
             bpy.context.scene.frame_start = 0
             bpy.context.scene.frame_end = 10
             
-            bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
+            l = bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
            
-            #if l == {'FINISHED'}: 
+            if l == {'FINISHED'}:
+                logging.info(' render  name {} path {}: {}'.format(task['project_name'],datetime.now().strftime('%c'),o))
+                try:
+                    os.remove(o)
+                except: pass
+
             q.task_done()
            ## logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
         except Empty:
            # logging.info('in worker have exception: {} and file name {}'.format(task,task['file_name']))
            # logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
-            logging.info(' render  name {} complete at {}'.format(task['project_name'],datetime.now().strftime('%c')))
+            #logging.info(' render  name {} complete at {}'.format(task['project_name'],datetime.now().strftime('%c')))
             break
             
 
@@ -230,7 +235,7 @@ def run_render_multi(data_for_render):
                 g.append(1)
                     #logging.info('task name {} and file name {}'.format(task,x['file_name']))
 
-        procs = (mp.Process(target=worker, args=(q,task,)) for _ in range(1))
+        procs = (mp.Process(target=worker, args=(q,task,)) for _ in range(3))
         logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(procs))
         #procs[0].start()
         #time.sleep(1)
@@ -301,8 +306,11 @@ def init(loop):
 
 app = web.Application()
 loop = asyncio.get_event_loop()
-loop.run_until_complete(init(loop))
+srv = loop.run_until_complete(init(loop))
+#srv = loop.run_until_complete(f)
+    
 try: 
     loop.run_forever()
+    print('serving on', srv.sockets[0].getsockname())
 except KeyboardInterrupt:  
     pass
