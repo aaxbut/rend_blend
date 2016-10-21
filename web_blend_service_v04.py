@@ -14,7 +14,24 @@ import bpy
 from datetime import datetime
 import time
 
+# import config settings
+import configparser
 
+
+conf = configparser.RawConfigParser()
+conf.read('wb.conf')
+BLEND_DIR = conf.get('bl_path','BLEND_DIR')
+USERS_DIR = conf.get('bl_path','USERS_DIR')
+dbconnectionhost = conf.get('base','dbconnectionhost')
+dbname = conf.get('base','dbname')
+dbusername = conf.get('base','dbusername')
+dbpassword = conf.get('base','dbpassword')
+
+# base connect
+import MySQLdb as mysql
+
+db = mysql.connect(host=dbconnectionhost,user='root',passwd='12301982',db='cmex')
+# end import config settings
 
 @asyncio.coroutine
 def handle(request):
@@ -54,15 +71,9 @@ def check_data(data):
 
 @asyncio.coroutine
 def transmit(request):
-    #request.post()
     ts = []
     data = yield from request.text()
-    #args = yield from get_session(request)
-    #yield data
-
     req_json = json.loads(data)
-   # req_json = check_data(req_json)
-    #print(req_json)
     logging.info('Session method : {}, session type : {}, messages is : {} : {}'.format(request.method, request, request, req_json))
 
 
@@ -78,46 +89,20 @@ def transmit(request):
 
 
     if request.content_type == 'application/json':
-
-       #$# ts.append(req_json)
-        f = jQ(req_json)
-        logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(f))
-
-        #j=5
-        #while ts:
-        #    k=ts.pop()
-        #    logging.info('!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k))
-        #    j-=1
-        #    k1 = yield from run_render_multi(k)
-        #    logging.info(__name__)
-        #    logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k1))
-            
-
-
-
-        # logging.info('Session method : {}, session type : {}, messages is : {}'.format(request.method, request.content_type, req_json))
-
-            # run render 
         yield from run_render_multi(req_json)
+        
         #logging.info(__name__)
         #logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k))
 
-        return web.json_response('{k}')
+        return web.json_response(req_json)
     return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
         content_type='application/json')#(yield from request.text())
 
 
 ### start render module
 #before render 
-BLEND_DIR =r'blend_pr'
-USERS_DIR =r'/home/aaxbut/python/rend_blend/users'
 
 
-def jQ(t):
-    tt=[]
-    tt.append(t)
-    logging.info('!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(len(tt)))
-    return len(tt)
 
 
 #for x in bpy.data.scenes['Scene'].sequence_editor.sequences_all:
@@ -171,9 +156,23 @@ def find_before(task):
     return os.path.abspath(os.path.join(BLEND_DIR,name_file))
 
 
+
+from bpy.app.handlers import persistent
 ##
+@persistent
+def render_complete(scene):
+    logging.info('#####################{} #########################{}#########{}####'.format(scene,bpy.data.filepath,bpy.context.scene.render.filepath))
+    logging.info('#####{}####{}##'.format(os.path.abspath(bpy.data.filepath),bpy.data.filepath))
+
+    try:
+        ins()
+        os.remove(os.path.abspath(bpy.data.filepath))
+        os.remove(os.path.abspath(bpy.data.filepath+'1'))
+    except:
+        pass
 
 
+#@asyncio.coroutine
 def worker(q,task):
     
 
@@ -187,27 +186,28 @@ def worker(q,task):
 
             #bpy.ops.wm.open_mainfile(filepath=task['file_name'])
             o = find_before(task)
-            bpy.context.scene.render.filepath =r'/tmp/'+str(time.time())
+            bpy.context.scene.render.filepath =str(task['result_dir'])+str(time.time())
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
             bpy.context.scene.frame_start = 0
             bpy.context.scene.frame_end = 10
             
-            l = bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
-           
-            if l == {'FINISHED'}:
-                logging.info(' render  name {} path {}: {}'.format(task['project_name'],datetime.now().strftime('%c'),o))
-                try:
-                    os.remove(o)
-                except: pass
+            bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
+            
+            #logging.info(' ###########{} ###################: render  name {} '.format(g,task['project_name']))
+           # yield from p
+            #    logging.info(' {} ###################: render  name {} path {}: {}'.format(q.get(),task['project_name'],datetime.now().strftime('%c'),o))
+            #    try:
+            #        os.remove(o)
+            #    except: pass
 
             q.task_done()
            ## logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
-        except Empty:
+        except Empty: break
            # logging.info('in worker have exception: {} and file name {}'.format(task,task['file_name']))
            # logging.info('render file name {} complete at {}'.format(task['file_name'],datetime.now().strftime('%c')))
             #logging.info(' render  name {} complete at {}'.format(task['project_name'],datetime.now().strftime('%c')))
-            break
+            
             
 
 # --
@@ -232,7 +232,7 @@ def run_render_multi(data_for_render):
         logging.info('!!!!!len of TASK {}:  QUE SIZE {}'.format(len(tasks), q.qsize()))
         for task in tasks:
                 q.put(task)
-                g.append(1)
+                
                     #logging.info('task name {} and file name {}'.format(task,x['file_name']))
 
         procs = (mp.Process(target=worker, args=(q,task,)) for _ in range(3))
@@ -240,7 +240,7 @@ def run_render_multi(data_for_render):
         #procs[0].start()
         #time.sleep(1)
         for p in procs:
-            #p.daemon = True
+            p.daemon = True
             #g.append(1)
             logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(p))
             p.start()
@@ -252,9 +252,9 @@ def run_render_multi(data_for_render):
         for p in procs: 
             p.join()
            # time.sleep(1)
-        #    if not p.is_alive():
-            logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(p))
-        #        sys.stdout.flush()
+            if not p.is_alive():
+                logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(p))
+                sys.stdout.flush()
            
         
 
@@ -280,6 +280,7 @@ def server_info():
 # log level debug
 def init(loop):
     logging.basicConfig(level=logging.DEBUG)
+    bpy.app.handlers.render_complete.append(render_complete)
 
    # fernet_key = fernet.Fernet.generate_key()
    # secret_key = base64.urlsafe_b64decode(fernet_key)
@@ -312,5 +313,6 @@ srv = loop.run_until_complete(init(loop))
 try: 
     loop.run_forever()
     print('serving on', srv.sockets[0].getsockname())
-except KeyboardInterrupt:  
-    pass
+except KeyboardInterrupt:
+    loop.close()  
+    #pass
