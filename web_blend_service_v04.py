@@ -119,7 +119,7 @@ def find_before(task):
     #name_file=''
 
 
-    for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name']+str'/project/')):
+    for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name']+str('/project/')):
 
         if not entry.name.startswith('.') and entry.is_file():
             logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(entry))
