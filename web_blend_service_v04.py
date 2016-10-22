@@ -89,7 +89,7 @@ def transmit(request):
 
 
     if request.content_type == 'application/json':
-        yield from run_render_multi(req_json)
+        run_render_multi(req_json)
         
         #logging.info(__name__)
         logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(req_json['user']))
