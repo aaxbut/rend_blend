@@ -92,7 +92,7 @@ def transmit(request):
         yield from run_render_multi(req_json)
         
         #logging.info(__name__)
-        #logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k))
+        logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k))
 
         return web.json_response(req_json)
     return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
@@ -124,7 +124,7 @@ def find_before(task):
             if entry.name == task['project_name'] +'.blend':
            #     print ('found file project  : {} '.format(entry.name))
                 #bpy.path = os.path.join(BLEND_DIR, task['name'])
-                ##print('work dir ',bpy.path.basename(os.path.join(BLEND_DIR, task['name'])))
+                print('work dir ',bpy.path.basename(os.path.join(BLEND_DIR, task['name'])))
              #   print ('directory in : ',os.getcwd())
                 # set directory where file place    
                 os.chdir(os.path.abspath(os.path.join(BLEND_DIR, task['project_name'])))
