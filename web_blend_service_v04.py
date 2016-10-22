@@ -122,11 +122,12 @@ def find_before(task):
     for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name'])):
 
         if not entry.name.startswith('.') and entry.is_file():
+            logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(entry))
 
             if entry.name == task['project_name'] +'.blend':
            #     print ('found file project  : {} '.format(entry.name))
                 #bpy.path = os.path.join(BLEND_DIR, task['name'])
-                print('work dir ',bpy.path.basename(os.path.join(BLEND_DIR, task['name'])))
+                logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(task['user']))
              #   print ('directory in : ',os.getcwd())
                 # set directory where file place    
                 os.chdir(os.path.abspath(os.path.join(BLEND_DIR, task['project_name'])))
