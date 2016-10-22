@@ -192,8 +192,8 @@ def worker(q,task):
             bpy.context.scene.render.filepath =str(task['result_dir'])+str(time.time())
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
-            bpy.context.scene.frame_start = 0
-            bpy.context.scene.frame_end = 10
+           # bpy.context.scene.frame_start = 0
+           # bpy.context.scene.frame_end = 10
             
             bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
             
