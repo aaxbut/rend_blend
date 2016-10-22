@@ -130,7 +130,7 @@ def find_before(task):
                 logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(task['user']))
              #   print ('directory in : ',os.getcwd())
                 # set directory where file place    
-                os.chdir(os.path.abspath(os.path.join(BLEND_DIR, task['project_name']+str('/project/'))))
+                os.chdir(os.path.abspath(task['project_name']+str('/project/')))
 
                # print ('directory in :2 : ',os.getcwd())    
                 bpy.ops.wm.open_mainfile(filepath=entry.name)
