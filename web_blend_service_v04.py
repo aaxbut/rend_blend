@@ -89,7 +89,8 @@ def transmit(request):
 
 
     if request.content_type == 'application/json':
-        run_render_multi(req_json)
+
+        yield from run_render_multi(req_json)
         
         #logging.info(__name__)
         logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(req_json['user']))
@@ -115,6 +116,7 @@ def transmit(request):
 
 
 def find_before(task):
+    name_file=''
 
 
     for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name'])):
