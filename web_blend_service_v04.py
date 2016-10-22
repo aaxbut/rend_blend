@@ -92,7 +92,7 @@ def transmit(request):
         yield from run_render_multi(req_json)
         
         #logging.info(__name__)
-        logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(k))
+        logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(req_json['user']))
 
         return web.json_response(req_json)
     return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
