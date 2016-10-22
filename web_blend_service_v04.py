@@ -28,9 +28,9 @@ dbusername = conf.get('base','dbusername')
 dbpassword = conf.get('base','dbpassword')
 
 # base connect
-import MySQLdb as mysql
+#import MySQLdb as mysql
 
-db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname)
+#db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname)
 # end import config settings
 
 @asyncio.coroutine
