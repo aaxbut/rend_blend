@@ -149,6 +149,8 @@ def render_complete(scene):
             cur = db.cursor()
             
             cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
+            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
+            
         #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
         os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
         #os.remove(os.path.abspath(bpy.data.filepath))
@@ -157,6 +159,28 @@ def render_complete(scene):
         pass
 
 #def
+
+@persistent
+def render_begin(scene):
+    logging.info('################{} ################{}#########{}####'.format(scene,bpy.data.filepath,bpy.context.scene.render.filepath))
+    logging.info('#####{}####{}##'.format(os.path.abspath(bpy.data.filepath),bpy.data.filepath))
+
+    try:
+        #ins()
+        h = bpy.context.scene.render.filepath
+        with db:
+            cur = db.cursor()
+            
+            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
+            
+            
+        #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
+        os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
+        #os.remove(os.path.abspath(bpy.data.filepath))
+        #os.remove(os.path.abspath(bpy.data.filepath+'1'))
+    except:
+        pass
+
 
 
 #@asyncio.coroutine
@@ -181,14 +205,18 @@ def worker(q,task):
                 cur = db.cursor()
                 cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
 
-            bpy.context.scene.frame_start = 100
-            bpy.context.scene.frame_end = 150
+            #bpy.context.scene.frame_start = 100
+            #bpy.context.scene.frame_end = 150
+
+            
             #os.chown(bpy.context.scene.render.filepath, 500, 500)
 
             bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
             os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
-            os.chmod(bpy.context.scene.render.filepath, 766)
-
+            os.chmod(bpy.context.scene.render.filepath, 0o777)
+            bpy.context.scene.frame_start = 100
+            bpy.context.scene.frame_end = 101
+            bpy.data.scenes[bpy.context.scene.name].render.image_settings.file_format = 'JPEG'
             #logging.info(' ###########{} ###################: render  name {} '.format(g,task['project_name']))
            # yield from p
             #    logging.info(' {} ###################: render  name {} path {}: {}'.format(q.get(),task['project_name'],datetime.now().strftime('%c'),o))
