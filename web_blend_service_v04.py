@@ -193,7 +193,7 @@ def worker(q,task):
             bpy.context.scene.render.filepath =str(task['result_dir'])+'/'+str('roller_video')
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
-            bpy.context.scene.format = 'MPEG4'
+            bpy.context.scene.render.ffmpeg.format = 'MPEG4'
 
            # bpy.context.scene.frame_start = 0
            # bpy.context.scene.frame_end = 10
