@@ -195,11 +195,11 @@ def worker(q,task):
             bpy.context.scene.cycles.device='CPU'
             bpy.context.scene.render.ffmpeg.format = 'MPEG4'
 
-           # bpy.context.scene.frame_start = 0
-           # bpy.context.scene.frame_end = 10
-            
+            bpy.context.scene.frame_start = 100
+            bpy.context.scene.frame_end = 300
+            #os.chown(bpy.context.scene.render.filepath, 500, 500)
             bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
-            
+            os.chown(bpy.context.scene.render.filepath, 500, 500)
             #logging.info(' ###########{} ###################: render  name {} '.format(g,task['project_name']))
            # yield from p
             #    logging.info(' {} ###################: render  name {} path {}: {}'.format(q.get(),task['project_name'],datetime.now().strftime('%c'),o))
