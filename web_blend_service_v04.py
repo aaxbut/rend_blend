@@ -169,6 +169,7 @@ def render_complete(scene):
 
     try:
         ins()
+        os.chown(bpy.context.scene.render.filepath, 500, 500)
         os.remove(os.path.abspath(bpy.data.filepath))
         os.remove(os.path.abspath(bpy.data.filepath+'1'))
     except:
@@ -189,9 +190,11 @@ def worker(q,task):
 
             #bpy.ops.wm.open_mainfile(filepath=task['file_name'])
             o = find_before(task)
-            bpy.context.scene.render.filepath =str(task['result_dir'])+str(time.time())
+            bpy.context.scene.render.filepath =str(task['result_dir'])+'/'+str('roller_video')
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
+            bpy.context.scene.format = 'MPEG4'
+
            # bpy.context.scene.frame_start = 0
            # bpy.context.scene.frame_end = 10
             
