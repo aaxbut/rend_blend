@@ -106,32 +106,32 @@ def find_before(task):
                # print ('directory in :2 : ',os.getcwd())    
     bpy.ops.wm.open_mainfile(filepath=task['project_name'])
 
-    name_file =task['user']+ task['project_name'].split('/')[-1]
-    bpy.ops.wm.save_as_mainfile(filepath=name_file)
+    name_file =task['user'] +'_'+ task['project_name'].split('/')[-1]
+    #bpy.ops.wm.save_as_mainfile(filepath=name_file)
 
                 #print('os dir now',os.path.abspath(os.path.join(USERS_DIR, task['user'])))
-    bpy.ops.wm.open_mainfile(filepath=name_file)
+    #bpy.ops.wm.open_mainfile(filepath=name_file)
 
 
-    for entry1 in os.listdir(os.path.join(USERS_DIR, task['user'])):
-        for entry2 in os.listdir(os.path.join(USERS_DIR, task['user'], entry1)):
-            for x in bpy.data.scenes['Scene'].sequence_editor.sequences_all:
-                if x.type == 'IMAGE':
-                    seq_elem = x.strip_elem_from_frame(0)
-                    #print(x.name.split('.')[0])
-                    if x.name.split('.')[0] in task['files_png']:
-                        logging.info('!!##FILES PNG### {}  : ####find_before : {}'.format(task['files_png'], seq_elem))
+    #for entry1 in os.listdir(os.path.join(USERS_DIR, task['user'])):
+    #    for entry2 in os.listdir(os.path.join(USERS_DIR, task['user'], entry1)):
+    #        for x in bpy.data.scenes['Scene'].sequence_editor.sequences_all:
+    #            if x.type == 'IMAGE':
+    #                seq_elem = x.strip_elem_from_frame(0)
+    #                #print(x.name.split('.')[0])
+    #                if x.name.split('.')[0] in task['files_png']:
+    #                    logging.info('!!##FILES PNG### {}  : ####find_before : {}'.format(task['files_png'], seq_elem))#
 
                        # print('test', task['files_png'][x.name.split('.')[0]])
                        # print('dfddfdf',os.path.join(USERS_DIR, task['user'], entry1))
 
 
-                        seq_elem.filename = task['files_png'][x.name.split('.')[0]]
+    #                    seq_elem.filename = task['files_png'][x.name.split('.')[0]]
 
-                        x.directory = os.path.join(USERS_DIR, task['user'], entry1)
+    #                       x.directory = os.path.join(USERS_DIR, task['user'], entry1)
 
-    bpy.ops.wm.save_as_mainfile(filepath=name_file)
-    return os.path.abspath(os.path.join(BLEND_DIR,name_file))
+    #bpy.ops.wm.save_as_mainfile(filepath=name_file)
+    return os.path.abspath(os.path.join(BLEND_DIR,task['project_name']))
 
 
 
@@ -148,11 +148,11 @@ def render_complete(scene):
         with db:
             cur = db.cursor()
             
-            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('',h.split('/')[7]))
+            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
         #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
         os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
-        os.remove(os.path.abspath(bpy.data.filepath))
-        os.remove(os.path.abspath(bpy.data.filepath+'1'))
+        #os.remove(os.path.abspath(bpy.data.filepath))
+        #os.remove(os.path.abspath(bpy.data.filepath+'1'))
     except:
         pass
 
@@ -181,8 +181,8 @@ def worker(q,task):
                 cur = db.cursor()
                 cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
 
-           # bpy.context.scene.frame_start = 100
-           # bpy.context.scene.frame_end = 300
+            bpy.context.scene.frame_start = 100
+            bpy.context.scene.frame_end = 150
             #os.chown(bpy.context.scene.render.filepath, 500, 500)
 
             bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
