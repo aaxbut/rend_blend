@@ -190,7 +190,7 @@ def worker(q,task):
 
             #bpy.ops.wm.open_mainfile(filepath=task['file_name'])
             o = find_before(task)
-            bpy.context.scene.render.filepath =str(task['result_dir'])+'/'+str('roller_video')
+            bpy.context.scene.render.filepath ='{}.mp4'.format(str(task['result_dir'])+'/'+str('roller_video'))
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
             bpy.context.scene.render.ffmpeg.format = 'MPEG4'
