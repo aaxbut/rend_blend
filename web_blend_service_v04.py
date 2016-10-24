@@ -174,7 +174,7 @@ def worker(q,task):
             bpy.context.scene.render.ffmpeg.format = 'MPEG4'
             with db:
                 cur = db.cursor()
-                cur.execute('update users_rollers set is_render=1 where id=%s',(task['user_roller_id']))
+                cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id'])))
 
            # bpy.context.scene.frame_start = 100
            # bpy.context.scene.frame_end = 300
