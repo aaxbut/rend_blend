@@ -141,8 +141,9 @@ def render_complete(scene):
     try:
         #ins()
         h = bpy.context.scene.render.filepath
-        cur.execute('update users_rollers set is_ready=1 filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
-        os.chown(bpy.context.scene.render.filepath, u_ugid, u_gguid)
+        cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',(bpy.context.scene.render.filepath,h.split('/')[7]))
+        #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
+        os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid)
         os.remove(os.path.abspath(bpy.data.filepath))
         os.remove(os.path.abspath(bpy.data.filepath+'1'))
     except:
@@ -178,7 +179,7 @@ def worker(q,task):
             #os.chown(bpy.context.scene.render.filepath, 500, 500)
 
             bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
-            os.chown(bpy.context.scene.render.filepath, u_ugid, u_gguid)
+            os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
             os.chmod(bpy.context.scene.render.filepath, 766)
 
             #logging.info(' ###########{} ###################: render  name {} '.format(g,task['project_name']))
