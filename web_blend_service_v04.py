@@ -141,7 +141,9 @@ def render_complete(scene):
     try:
         #ins()
         h = bpy.context.scene.render.filepath
-        cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',(bpy.context.scene.render.filepath,h.split('/')[7]))
+        with db:
+            cur = db.cursor()
+            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',(bpy.context.scene.render.filepath,h.split('/')[7]))
         #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
         os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
         os.remove(os.path.abspath(bpy.data.filepath))
@@ -172,7 +174,7 @@ def worker(q,task):
             bpy.context.scene.render.ffmpeg.format = 'MPEG4'
             with db:
                 cur = db.cursor()
-                cur.execute('update users_rollers set is_render=1 where id={}'.format(task['user_roller_id']))
+                cur.execute('update users_rollers set is_render=1 where id=%s',(task['user_roller_id']))
 
            # bpy.context.scene.frame_start = 100
            # bpy.context.scene.frame_end = 300
