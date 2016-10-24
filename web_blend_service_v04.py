@@ -90,23 +90,24 @@ def find_before(task):
     #name_file=''
 
 
-    for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name']+str('/project/'))):
+    #for entry in os.scandir(os.path.join(BLEND_DIR, task['project_name']+str('/project/'))):
 
-        if not entry.name.startswith('.') and entry.is_file():
-            logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(entry))
+    #    if not entry.name.startswith('.') and entry.is_file():
+    #        logging.info('!!!!!!!!!!!!!!find_before ENTRY NAME : {}'.format(entry))
 
-            if entry.name == task['project_name'] +'.blend':
+    #        if entry.name == task['project_name'] +'.blend':
            #     print ('found file project  : {} '.format(entry.name))
                 #bpy.path = os.path.join(BLEND_DIR, task['name'])
-                logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(task['user']))
+    #            logging.info('!!!!!!!!!!!find_before USER TASK : {}'.format(task['user']))
              #   print ('directory in : ',os.getcwd())
                 # set directory where file place    
-                os.chdir(os.path.abspath(os.path.join(BLEND_DIR, task['project_name']+str('/project/'))))
+    #            os.chdir(os.path.abspath(os.path.join(BLEND_DIR, task['project_name']+str('/project/'))))
 
                # print ('directory in :2 : ',os.getcwd())    
-                bpy.ops.wm.open_mainfile(filepath=entry.name)
-                name_file =task['user']+entry.name
-                bpy.ops.wm.save_as_mainfile(filepath=name_file)
+    bpy.ops.wm.open_mainfile(filepath=task['project_name'])
+
+    name_file =task['user']+ task['project_name'].split('/')[-1]
+    bpy.ops.wm.save_as_mainfile(filepath=name_file)
 
                 #print('os dir now',os.path.abspath(os.path.join(USERS_DIR, task['user'])))
     bpy.ops.wm.open_mainfile(filepath=name_file)
@@ -119,8 +120,11 @@ def find_before(task):
                     seq_elem = x.strip_elem_from_frame(0)
                     #print(x.name.split('.')[0])
                     if x.name.split('.')[0] in task['files_png']:
+                        logging.info('!!##FILES PNG### {}  : ####find_before : {}'.format(task['files_png'], seq_elem))
+
                        # print('test', task['files_png'][x.name.split('.')[0]])
                        # print('dfddfdf',os.path.join(USERS_DIR, task['user'], entry1))
+
 
                         seq_elem.filename = task['files_png'][x.name.split('.')[0]]
 
@@ -135,7 +139,7 @@ from bpy.app.handlers import persistent
 ##
 @persistent
 def render_complete(scene):
-    logging.info('#####################{} #########################{}#########{}####'.format(scene,bpy.data.filepath,bpy.context.scene.render.filepath))
+    logging.info('################{} ################{}#########{}####'.format(scene,bpy.data.filepath,bpy.context.scene.render.filepath))
     logging.info('#####{}####{}##'.format(os.path.abspath(bpy.data.filepath),bpy.data.filepath))
 
     try:
