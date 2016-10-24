@@ -26,11 +26,12 @@ dbconnectionhost = conf.get('base','dbconnectionhost')
 dbname = conf.get('base','dbname')
 dbusername = conf.get('base','dbusername')
 dbpassword = conf.get('base','dbpassword')
-
+u_ugid = conf.get('usr_permission','uid')
+u_gguid = conf.get('usr_permission','gid')
 # base connect
-#import MySQLdb as mysql
+import MySQLdb as mysql
 
-#db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname)
+db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname)
 # end import config settings
 
 @asyncio.coroutine
@@ -75,44 +76,14 @@ def transmit(request):
     data = yield from request.text()
     req_json = json.loads(data)
     logging.info('Session method : {}, session type : {}, messages is : {} : {}'.format(request.method, request, request, req_json))
-
-
-        
-
-        
-
-        #ses = await get_session(request)
-        #ses['key'] = 'sdsdsd'
-        #print('session aio http__ ',ses)
-        #for x in request:
-         #   logging.info('request in  : {}'.format(x))
-
-
     if request.content_type == 'application/json':
-
         yield from run_render_multi(req_json)
-        
-        #logging.info(__name__)
         logging.info('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!YIELD FROM REND_BLRND_MULTI RETURN MESSAGES : {}'.format(req_json['user']))
 
         return web.json_response(req_json)
     return web.Response(body=json.dumps({'ok': req_json}).encode('utf-8'),
         content_type='application/json')#(yield from request.text())
 
-
-### start render module
-#before render 
-
-
-
-
-#for x in bpy.data.scenes['Scene'].sequence_editor.sequences_all:
-#    if x.type == 'IMAGE':
-#        seq_elem = x.strip_elem_from_frame(0)
-#        #print(x.name.split('.')[0])
-#        if x.name.split('.')[0] in task['files_png']:
-#            print('test', task['files_png'][x.name.split('.')[0]])
-#            seq_elem.filename = task['files_png'][x.name.split('.')[0]]
 
 
 def find_before(task):
@@ -168,12 +139,16 @@ def render_complete(scene):
     logging.info('#####{}####{}##'.format(os.path.abspath(bpy.data.filepath),bpy.data.filepath))
 
     try:
-        ins()
-        os.chown(bpy.context.scene.render.filepath, 500, 500)
+        #ins()
+        h = bpy.context.scene.render.filepath
+        cur.execute('update users_rollers set is_ready=1 filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
+        os.chown(bpy.context.scene.render.filepath, u_ugid, u_gguid)
         os.remove(os.path.abspath(bpy.data.filepath))
         os.remove(os.path.abspath(bpy.data.filepath+'1'))
     except:
         pass
+
+def
 
 
 #@asyncio.coroutine
@@ -194,12 +169,16 @@ def worker(q,task):
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
             bpy.context.scene.render.ffmpeg.format = 'MPEG4'
+            with db:
+                cur = db.cursor()
+                cur.execute('update users_rollers set is_render=1 where id={}'.format(task['user_roller_id']))
 
            # bpy.context.scene.frame_start = 100
            # bpy.context.scene.frame_end = 300
             #os.chown(bpy.context.scene.render.filepath, 500, 500)
+
             bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
-            os.chown(bpy.context.scene.render.filepath, 500, 500)
+            os.chown(bpy.context.scene.render.filepath, u_ugid, u_gguid)
             os.chmod(bpy.context.scene.render.filepath, 766)
 
             #logging.info(' ###########{} ###################: render  name {} '.format(g,task['project_name']))
