@@ -148,7 +148,7 @@ def render_complete(scene):
     except:
         pass
 
-def
+#def
 
 
 #@asyncio.coroutine
