@@ -143,7 +143,8 @@ def render_complete(scene):
         h = bpy.context.scene.render.filepath
         with db:
             cur = db.cursor()
-            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',(bpy.context.scene.render.filepath,h.split('/')[7]))
+            
+            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('',h.split('/')[7]))
         #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
         os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
         os.remove(os.path.abspath(bpy.data.filepath))
