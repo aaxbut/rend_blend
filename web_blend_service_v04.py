@@ -149,7 +149,7 @@ def render_complete(scene):
             cur = db.cursor()
             
             cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
-            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
+            cur.execute('update users_rollers set is_ready=1,filename_screen="video/%s" where id=%s',('video/1.jpg',h.split('/')[7]))
             
         #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
         os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
@@ -212,11 +212,14 @@ def worker(q,task):
             #os.chown(bpy.context.scene.render.filepath, 500, 500)
 
             bpy.ops.render.render(animation=True,scene=bpy.context.scene.name)
+
             os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
             os.chmod(bpy.context.scene.render.filepath, 0o777)
             bpy.context.scene.frame_start = 100
             bpy.context.scene.frame_end = 101
             bpy.data.scenes[bpy.context.scene.name].render.image_settings.file_format = 'JPEG'
+            bpy.context.scene.render.filepath ='{}.jpg'.format(str(task['result_dir'])+'/'+str('roller_video'))
+            bpy.ops.render.render(write_still=True)
             #logging.info(' ###########{} ###################: render  name {} '.format(g,task['project_name']))
            # yield from p
             #    logging.info(' {} ###################: render  name {} path {}: {}'.format(q.get(),task['project_name'],datetime.now().strftime('%c'),o))
