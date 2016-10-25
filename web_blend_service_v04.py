@@ -201,6 +201,8 @@ def worker(q,task):
             bpy.context.scene.render.engine = 'CYCLES'
             bpy.context.scene.cycles.device='CPU'
             bpy.context.scene.render.ffmpeg.format = 'MPEG4'
+            bpy.context.scene.render.ffmpeg.video_bitrate=1050
+            bpy.context.scene.render.ffmpeg.audio_bitrate=134
             with db:
                 cur = db.cursor()
                 cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
