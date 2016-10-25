@@ -19,7 +19,7 @@ import configparser
 
 
 conf = configparser.RawConfigParser()
-conf.read('wb.conf')
+conf.read('/etc/wb.conf')
 BLEND_DIR = conf.get('bl_path','BLEND_DIR')
 USERS_DIR = conf.get('bl_path','USERS_DIR')
 dbconnectionhost = conf.get('base','dbconnectionhost')
