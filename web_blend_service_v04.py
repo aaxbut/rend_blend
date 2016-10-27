@@ -145,7 +145,7 @@ def render_complete(scene):
     try:
         #ins()
         h = bpy.context.scene.render.filepath
-        with db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
+        with mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
             try:
                 db.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
                 db.execute('update users_rollers set is_ready=1,filename_screen="video/%s" where id=%s',('video/roller_video.jpg',h.split('/')[7]))
@@ -171,7 +171,7 @@ def render_begin(scene):
     try:
         #ins()
         h = bpy.context.scene.render.filepath
-        with db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
+        with mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
             try:
                 cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
             except Exception as e:
@@ -210,7 +210,7 @@ def worker(q,task):
             bpy.context.scene.render.ffmpeg.audio_bitrate=134
 
 
-            with db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
+            with mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
             try:
                 cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
             except Exception as e:
