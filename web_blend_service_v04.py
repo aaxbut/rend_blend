@@ -31,7 +31,7 @@ u_gguid = conf.get('usr_permission','gid')
 # base connect
 import MySQLdb as mysql
 
-db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname)
+
 # end import config settings
 
 @asyncio.coroutine
@@ -145,11 +145,14 @@ def render_complete(scene):
     try:
         #ins()
         h = bpy.context.scene.render.filepath
-        with db:
-            cur = db.cursor()
-            
-            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
-            cur.execute('update users_rollers set is_ready=1,filename_screen="video/%s" where id=%s',('video/roller_video.jpg',h.split('/')[7]))
+        with db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
+            try:
+                db.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
+                db.execute('update users_rollers set is_ready=1,filename_screen="video/%s" where id=%s',('video/roller_video.jpg',h.split('/')[7]))
+            except Exception as e:
+                logging.info('Base err : {}'.format(e))
+            finally:
+                db.close()
             
         #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
         os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
@@ -168,12 +171,14 @@ def render_begin(scene):
     try:
         #ins()
         h = bpy.context.scene.render.filepath
-        with db:
-            cur = db.cursor()
-            
-            cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
-            
-            
+        with db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
+            try:
+                cur.execute('update users_rollers set is_ready=1,filename_video=%s where id=%s',('video/roller_video.mp4',h.split('/')[7]))
+            except Exception as e:
+                logging.info('Base err : {}'.format(e))
+            finally:
+                db.close()
+     
         #cur.execute('update users_rollers set is_ready=1, filename_video={} where id={}'.format(bpy.context.scene.render.filepath,h.split('/')[7]))
         os.chown(bpy.context.scene.render.filepath, int(u_ugid), int(u_gguid))
         #os.remove(os.path.abspath(bpy.data.filepath))
@@ -203,10 +208,16 @@ def worker(q,task):
             bpy.context.scene.render.ffmpeg.format = 'MPEG4'
             bpy.context.scene.render.ffmpeg.video_bitrate=1050
             bpy.context.scene.render.ffmpeg.audio_bitrate=134
-            with db:
-                cur = db.cursor()
-                cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
 
+
+            with db = mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
+            try:
+                cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
+            except Exception as e:
+                logging.info('Base err : {}'.format(e))
+            finally:
+                db.close()
+           
             #bpy.context.scene.frame_start = 100
             #bpy.context.scene.frame_end = 150
 
