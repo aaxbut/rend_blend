@@ -277,7 +277,7 @@ def run_render_multi(data_for_render):
                 
                     #logging.info('task name {} and file name {}'.format(task,x['file_name']))
 
-        procs = (mp.Process(target=worker, args=(q,task,)) for _ in range(3))
+        procs = (mp.Process(target=worker, args=(q,task,)) for _ in range(5))
         logging.info('!!!!!!!!!!!!!!!!!!!!! {} ******************'.format(procs))
         #procs[0].start()
         #time.sleep(1)
