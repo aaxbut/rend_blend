@@ -211,12 +211,13 @@ def worker(q,task):
 
 
             with mysql.connect(host=dbconnectionhost,user=dbusername,passwd=dbpassword,db=dbname) as db:
-            try:
-                cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
-            except Exception as e:
-                logging.info('Base err : {}'.format(e))
-            finally:
-                db.close()
+                try:
+                    cur.execute('update users_rollers set is_render=1 where id=%s',(str(task['user_roller_id']),))
+
+                except Exception as e:
+                    logging.info('Base err : {}'.format(e))
+                finally:
+                    db.close()
            
             #bpy.context.scene.frame_start = 100
             #bpy.context.scene.frame_end = 150
